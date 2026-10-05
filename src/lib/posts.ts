@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import { slugifyHeading, type PostMeta } from "@/lib/post-utils";
+import { slugifyHeading, type PostMeta, type SearchEntry } from "@/lib/post-utils";
 
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 
@@ -89,4 +89,29 @@ export function getAllTags(): string[] {
 /** 목록 등 클라이언트로 넘기는 용도: 본문을 제외한 메타 정보 */
 export function toMeta({ slug, title, date, summary, tags }: Post): PostMeta {
   return { slug, title, date, summary, tags };
+}
+
+export function getPostsByTag(tag: string): Post[] {
+  return getPublishedPosts().filter((p) => p.tags.includes(tag));
+}
+
+const SEARCH_BODY_LIMIT = 2000;
+
+/** 검색용 본문: 코드 블록과 마크다운 기호를 제거하고 길이를 제한한다. */
+function toSearchBody(content: string): string {
+  return content
+    .replace(/^(```|~~~)[\s\S]*?^\1/gm, " ")
+    .replace(/`([^`]*)`/g, "$1")
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/^[#>\-*+\d.\s]+/gm, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, SEARCH_BODY_LIMIT);
+}
+
+export function buildSearchIndex(): SearchEntry[] {
+  return getPublishedPosts().map((p) => ({
+    ...toMeta(p),
+    body: toSearchBody(p.content),
+  }));
 }

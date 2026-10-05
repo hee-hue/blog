@@ -20,3 +20,12 @@ export function slugifyHeading(text: string): string {
     .replace(/[^\p{L}\p{N}\s-]/gu, "")
     .replace(/\s+/g, "-");
 }
+
+export type SearchEntry = PostMeta & {
+  /** 코드 블록과 마크다운 기호를 제거한 본문 일부 */
+  body: string;
+};
+
+export function tagHref(tag: string): string {
+  return `/tags/${encodeURIComponent(tag)}`;
+}

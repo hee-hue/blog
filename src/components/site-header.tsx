@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { SearchButton } from "@/components/search-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SITE } from "@/lib/site";
 
@@ -28,14 +28,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="검색 (준비 중)"
-            title="검색 (준비 중)"
-          >
-            <Search />
-          </Button>
+          <SearchButton />
           <ThemeToggle />
           <Link
             href="/login"

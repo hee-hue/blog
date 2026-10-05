@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx-components";
 import { PostActions } from "@/components/post-actions";
-import { TagBadge } from "@/components/tag-badge";
+import { TagLink } from "@/components/tag-badge";
 import { Toc } from "@/components/toc";
 import { Separator } from "@/components/ui/separator";
 import { MOCK_STATS } from "@/lib/mock-posts";
@@ -51,7 +51,7 @@ export default async function PostPage({ params }: PageProps<"/posts/[slug]">) {
           </div>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {post.tags.map((t) => (
-              <TagBadge key={t}>{t}</TagBadge>
+              <TagLink key={t} tag={t} />
             ))}
           </div>
           <div className="mt-6">
