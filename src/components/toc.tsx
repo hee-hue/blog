@@ -1,7 +1,6 @@
-import type { Block } from "@/lib/mock-posts";
+import type { Heading } from "@/lib/posts";
 
-export function Toc({ blocks }: { blocks: Block[] }) {
-  const items = blocks.flatMap((b) => (b.type === "h2" ? [b] : []));
+export function Toc({ items }: { items: Heading[] }) {
   if (items.length === 0) return null;
 
   return (

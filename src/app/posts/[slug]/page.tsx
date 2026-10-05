@@ -2,19 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { CodeBlock } from "@/components/code-block";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import { mdxComponents } from "@/components/mdx-components";
 import { PostActions } from "@/components/post-actions";
 import { TagBadge } from "@/components/tag-badge";
 import { Toc } from "@/components/toc";
 import { Separator } from "@/components/ui/separator";
+import { MOCK_STATS } from "@/lib/mock-posts";
+import { formatDate } from "@/lib/post-utils";
 import {
-  MOCK_STATS,
-  formatDate,
   getAdjacentPosts,
   getPost,
   getPublishedPosts,
-  getReadingMinutes,
-} from "@/lib/mock-posts";
+} from "@/lib/posts";
 
 export function generateStaticParams() {
   return getPublishedPosts().map((p) => ({ slug: p.slug }));
@@ -37,7 +37,7 @@ export default async function PostPage({ params }: PageProps<"/posts/[slug]">) {
 
   return (
     <div className="relative">
-      <Toc blocks={post.blocks} />
+      <Toc items={post.headings} />
 
       <article>
         <header>
@@ -47,7 +47,7 @@ export default async function PostPage({ params }: PageProps<"/posts/[slug]">) {
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
             <time dateTime={post.date}>{formatDate(post.date)}</time>
             <span aria-hidden>·</span>
-            <span>읽는 시간 {getReadingMinutes(post)}분</span>
+            <span>읽는 시간 {post.readingMinutes}분</span>
           </div>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {post.tags.map((t) => (
@@ -62,39 +62,7 @@ export default async function PostPage({ params }: PageProps<"/posts/[slug]">) {
         <Separator className="my-8" />
 
         <div className="text-[1.0625rem]">
-          {post.blocks.map((b, i) => {
-            switch (b.type) {
-              case "h2":
-                return (
-                  <h2
-                    key={i}
-                    id={b.id}
-                    className="mb-3 mt-12 scroll-mt-24 text-2xl font-semibold tracking-tight"
-                  >
-                    {b.text}
-                  </h2>
-                );
-              case "p":
-                return (
-                  <p key={i} className="my-5">
-                    {b.text}
-                  </p>
-                );
-              case "ul":
-                return (
-                  <ul
-                    key={i}
-                    className="my-5 list-disc space-y-1.5 pl-6 marker:text-point"
-                  >
-                    {b.items.map((it) => (
-                      <li key={it}>{it}</li>
-                    ))}
-                  </ul>
-                );
-              case "code":
-                return <CodeBlock key={i} lang={b.lang} code={b.code} />;
-            }
-          })}
+          <MDXRemote source={post.content} components={mdxComponents} />
         </div>
       </article>
 

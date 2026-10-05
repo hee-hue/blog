@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { AdminTable, type StatRow } from "@/components/admin-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MOCK_STATS, getPublishedPosts } from "@/lib/mock-posts";
+import { MOCK_STATS } from "@/lib/mock-posts";
+import { getPublishedPosts } from "@/lib/posts";
 
 export const metadata: Metadata = { title: "관리자" };
 

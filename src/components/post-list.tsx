@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { TagBadge } from "@/components/tag-badge";
-import { formatDate, type Post } from "@/lib/mock-posts";
+import { formatDate, type PostMeta } from "@/lib/post-utils";
 import { cn } from "@/lib/utils";
 
-export function PostList({ posts, tags }: { posts: Post[]; tags: string[] }) {
+export function PostList({ posts, tags }: { posts: PostMeta[]; tags: string[] }) {
   const [active, setActive] = useState<string | null>(null);
   const visible = active ? posts.filter((p) => p.tags.includes(active)) : posts;
 
