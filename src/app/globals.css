@@ -126,6 +126,18 @@
   }
 }
 
+/* shiki: 두 테마의 색을 CSS 변수로 받아 현재 테마에 맞게 적용 */
+.shiki-wrapper .shiki {
+  background: transparent;
+  font-family: var(--font-mono);
+}
+.shiki-wrapper .shiki span {
+  color: var(--shiki-light);
+}
+.dark .shiki-wrapper .shiki span {
+  color: var(--shiki-dark);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

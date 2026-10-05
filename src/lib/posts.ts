@@ -23,9 +23,14 @@ function extractHeadings(content: string): Heading[] {
   }));
 }
 
-/** 본문 글자 수 기준(분당 약 500자) */
+/** 본문 글자 수 기준(분당 약 500자). 코드 블록은 훑어 읽으므로 30%만 반영한다. */
 function calcReadingMinutes(content: string): number {
-  return Math.max(1, Math.round(content.length / 500));
+  const codeChars = [...content.matchAll(/^(```|~~~)[\s\S]*?^/gm)].reduce(
+    (sum, m) => sum + m[0].length,
+    0,
+  );
+  const weighted = content.length - codeChars + codeChars * 0.3;
+  return Math.max(1, Math.round(weighted / 500));
 }
 
 function readPost(file: string): Post {

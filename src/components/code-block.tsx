@@ -4,7 +4,15 @@ import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function CodeBlock({ code, lang }: { code: string; lang: string }) {
+export function CodeBlock({
+  code,
+  lang,
+  html,
+}: {
+  code: string;
+  lang: string;
+  html: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -29,9 +37,10 @@ export function CodeBlock({ code, lang }: { code: string; lang: string }) {
           {copied ? "복사됨" : "복사"}
         </Button>
       </div>
-      <pre className="overflow-x-auto p-4 text-sm leading-relaxed">
-        <code className="font-mono">{code}</code>
-      </pre>
+      <div
+        className="shiki-wrapper overflow-x-auto p-4 text-sm leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
     </div>
   );
 }

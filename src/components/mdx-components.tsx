@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactElement, ReactNode } from "react";
 import { CodeBlock } from "@/components/code-block";
+import { highlight } from "@/lib/highlight";
 import { slugifyHeading } from "@/lib/post-utils";
 
 function textOf(node: ReactNode): string {
@@ -50,10 +51,10 @@ export const mdxComponents = {
         {children}
       </code>
     ),
-  pre: ({ children }: ComponentProps<"pre">) => {
+  pre: async ({ children }: ComponentProps<"pre">) => {
     const el = children as ReactElement<{ className?: string; children?: ReactNode }>;
     const lang = /language-([\w-]+)/.exec(el.props?.className ?? "")?.[1] ?? "text";
     const code = textOf(el.props?.children).replace(/\n$/, "");
-    return <CodeBlock lang={lang} code={code} />;
+    return <CodeBlock lang={lang} code={code} html={await highlight(code, lang)} />;
   },
 };
