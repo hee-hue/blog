@@ -25,7 +25,7 @@ function extractHeadings(content: string): Heading[] {
 
 /** 본문 글자 수 기준(분당 약 500자). 코드 블록은 훑어 읽으므로 30%만 반영한다. */
 function calcReadingMinutes(content: string): number {
-  const codeChars = [...content.matchAll(/^(```|~~~)[\s\S]*?^/gm)].reduce(
+  const codeChars = [...content.matchAll(/^(```|~~~)[\s\S]*?^\1/gm)].reduce(
     (sum, m) => sum + m[0].length,
     0,
   );
