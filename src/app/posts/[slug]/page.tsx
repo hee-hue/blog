@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Comments } from "@/components/comments";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx-components";
 import { PostActions } from "@/components/post-actions";
@@ -25,7 +26,24 @@ export async function generateMetadata({
 }: PageProps<"/posts/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const post = getPost(slug);
-  return post ? { title: post.title, description: post.summary } : {};
+  if (!post) return {};
+  return {
+    title: post.title,
+    description: post.summary,
+    alternates: {
+      canonical: `/posts/${post.slug}`,
+      types: { "application/rss+xml": "/rss.xml" },
+    },
+    openGraph: {
+      type: "article",
+      url: `/posts/${post.slug}`,
+      title: post.title,
+      description: post.summary,
+      publishedTime: post.date,
+      tags: post.tags,
+    },
+    twitter: { card: "summary", title: post.title, description: post.summary },
+  };
 }
 
 export default async function PostPage({ params }: PageProps<"/posts/[slug]">) {
@@ -68,8 +86,8 @@ export default async function PostPage({ params }: PageProps<"/posts/[slug]">) {
 
       <Separator className="my-10" />
 
-      <section aria-label="댓글" className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
-        댓글(giscus)은 이후 단계에서 연결됩니다.
+      <section aria-label="댓글">
+        <Comments />
       </section>
 
       <nav aria-label="이전/다음 글" className="mt-10 grid gap-4 sm:grid-cols-2">

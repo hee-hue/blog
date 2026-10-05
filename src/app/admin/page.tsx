@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MOCK_STATS } from "@/lib/mock-posts";
 import { getPublishedPosts } from "@/lib/posts";
 
-export const metadata: Metadata = { title: "관리자" };
+export const metadata: Metadata = { title: "관리자", robots: { index: false, follow: false } };
 
 export default function AdminPage() {
   const rows: StatRow[] = getPublishedPosts().map((p) => ({

@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export const metadata: Metadata = { title: "로그인" };
+export const metadata: Metadata = { title: "로그인", robots: { index: false, follow: false } };
 
 export default function LoginPage() {
   return (

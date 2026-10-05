@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { SITE, THEME_STORAGE_KEY } from "@/lib/site";
+import { SITE, SITE_URL, THEME_STORAGE_KEY } from "@/lib/site";
 
 const pretendard = localFont({
   src: "./fonts/PretendardVariable.woff2",
@@ -13,8 +13,18 @@ const pretendard = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: SITE.name, template: `%s | ${SITE.name}` },
   description: SITE.description,
+  alternates: { types: { "application/rss+xml": "/rss.xml" } },
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: "ko_KR",
+    title: SITE.name,
+    description: SITE.description,
+  },
+  twitter: { card: "summary" },
 };
 
 // 페인트 전에 실행되어 FOUC를 막는다.
