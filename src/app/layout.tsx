@@ -1,16 +1,8 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SITE, SITE_URL, THEME_STORAGE_KEY } from "@/lib/site";
-
-const pretendard = localFont({
-  src: "./fonts/PretendardVariable.woff2",
-  variable: "--font-pretendard",
-  display: "swap",
-  weight: "45 920",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -34,7 +26,7 @@ const themeScript = `(function(){try{var m=localStorage.getItem(${JSON.stringify
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className={`${pretendard.variable} h-full`} suppressHydrationWarning>
+    <html lang="ko" className="h-full" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

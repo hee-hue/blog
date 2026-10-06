@@ -7,7 +7,8 @@ export async function highlight(code: string, lang: string): Promise<string> {
   const l = ALIASES[lang] ?? lang;
   return codeToHtml(code, {
     lang: l in bundledLanguages ? l : "text",
-    themes: { light: "github-light", dark: "github-dark" },
+    // 라이트는 WCAG 대비를 만족하는 high-contrast 변형을 쓴다.
+    themes: { light: "github-light-high-contrast", dark: "github-dark" },
     defaultColor: false,
   });
 }

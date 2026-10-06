@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { safeNext } from "@/lib/auth-utils";
-import { createClient } from "@/lib/supabase/client";
+import { loadSupabase } from "@/lib/supabase/lazy";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
@@ -19,7 +19,7 @@ export function LoginForm() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const email = String(new FormData(e.currentTarget).get("email") ?? "").trim();
-    const supabase = createClient();
+    const supabase = await loadSupabase();
 
     if (!supabase) {
       setStatus("error");

@@ -1,12 +1,13 @@
 @import "tailwindcss";
+/* Pretendard 분할 폰트: 화면에 쓰인 글자 구간의 파일만 내려받는다. */
+@import "./fonts/pretendard/pretendardvariable-dynamic-subset.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-pretendard), "Pretendard Variable", Pretendard,
-    system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic",
+  --font-sans: "Pretendard Variable", Pretendard, system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic",
     sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;

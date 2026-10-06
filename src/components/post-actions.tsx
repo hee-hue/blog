@@ -4,11 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Bookmark, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
+import { fetchLikeCount, hasSessionCookie, loadSupabase } from "@/lib/supabase/lazy";
 
 type Kind = "likes" | "bookmarks";
 
 // 글 페이지는 정적 생성을 유지하므로 좋아요 수와 내 상태는 클라이언트에서 불러온다.
+// Supabase 클라이언트는 로그인한 방문자에게만 불러온다.
 export function PostActions({ slug }: { slug: string }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -20,49 +21,61 @@ export function PostActions({ slug }: { slug: string }) {
   const pending = useRef<Set<Kind>>(new Set());
 
   useEffect(() => {
-    const supabase = createClient();
-    if (!supabase) return;
     let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
 
-    supabase.rpc("get_like_count", { p_slug: slug }).then(({ data }) => {
-      if (!cancelled && typeof data === "number") setCount(data);
-      else if (!cancelled && typeof data === "string") setCount(Number(data));
+    fetchLikeCount(slug).then((n) => {
+      if (!cancelled && n !== null) setCount(n);
     });
 
-    async function loadMine(userId: string | null) {
-      if (!supabase) return;
-      if (!userId) {
-        if (!cancelled) {
-          setLoggedIn(false);
-          setLiked(false);
-          setBookmarked(false);
+    async function init() {
+      if (!hasSessionCookie()) return; // 비로그인: 내 상태를 조회할 필요가 없다.
+      const supabase = await loadSupabase();
+      if (!supabase || cancelled) return;
+
+      async function loadMine(userId: string | null) {
+        if (!supabase) return;
+        if (!userId) {
+          if (!cancelled) {
+            setLoggedIn(false);
+            setLiked(false);
+            setBookmarked(false);
+          }
+          return;
         }
-        return;
+        const [l, b] = await Promise.all([
+          supabase.from("likes").select("post_slug").eq("post_slug", slug).maybeSingle(),
+          supabase.from("bookmarks").select("post_slug").eq("post_slug", slug).maybeSingle(),
+        ]);
+        if (cancelled) return;
+        setLoggedIn(true);
+        setLiked(Boolean(l.data));
+        setBookmarked(Boolean(b.data));
       }
-      const [l, b] = await Promise.all([
-        supabase.from("likes").select("post_slug").eq("post_slug", slug).maybeSingle(),
-        supabase.from("bookmarks").select("post_slug").eq("post_slug", slug).maybeSingle(),
-      ]);
-      if (cancelled) return;
-      setLoggedIn(true);
-      setLiked(Boolean(l.data));
-      setBookmarked(Boolean(b.data));
+
+      const { data } = await supabase.auth.getUser();
+      await loadMine(data.user?.id ?? null);
+      const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+        loadMine(session?.user?.id ?? null);
+      });
+      unsubscribe = () => sub.subscription.unsubscribe();
     }
 
-    supabase.auth.getUser().then(({ data }) => loadMine(data.user?.id ?? null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      loadMine(session?.user?.id ?? null);
-    });
+    init();
     return () => {
       cancelled = true;
-      sub.subscription.unsubscribe();
+      unsubscribe?.();
     };
   }, [slug]);
 
   async function toggle(kind: Kind) {
-    const supabase = createClient();
     // 비로그인(또는 설정 없음)이면 로그인 후 이 글로 돌아오게 한다.
-    if (!supabase || !loggedIn) {
+    if (!loggedIn) {
+      router.push(`/login?next=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    const supabase = await loadSupabase();
+    if (!supabase) {
       router.push(`/login?next=${encodeURIComponent(pathname)}`);
       return;
     }

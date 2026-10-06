@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
+import { hasSessionCookie, loadSupabase } from "@/lib/supabase/lazy";
 
 // 글 페이지는 정적 생성을 유지해야 하므로, 로그인 상태는 클라이언트에서 불러온다.
 export function AuthButton() {
@@ -14,21 +14,38 @@ export function AuthButton() {
   const [email, setEmail] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
-    const supabase = createClient();
-    if (!supabase) {
-      // 설정이 없으면 비로그인으로 취급한다.
-      const t = setTimeout(() => setEmail(null), 0);
-      return () => clearTimeout(t);
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    async function init() {
+      // 세션 쿠키가 없으면 비로그인이므로 Supabase 를 불러오지 않는다.
+      if (!hasSessionCookie()) {
+        if (!cancelled) setEmail(null);
+        return;
+      }
+      const supabase = await loadSupabase();
+      if (!supabase || cancelled) {
+        if (!cancelled) setEmail(null);
+        return;
+      }
+      const { data } = await supabase.auth.getUser();
+      if (!cancelled) setEmail(data.user?.email ?? null);
+      const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+        setEmail(session?.user?.email ?? null);
+      });
+      unsubscribe = () => sub.subscription.unsubscribe();
     }
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setEmail(session?.user?.email ?? null);
-    });
-    return () => sub.subscription.unsubscribe();
+
+    init();
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   async function signOut() {
-    await createClient()?.auth.signOut();
+    const supabase = await loadSupabase();
+    await supabase?.auth.signOut();
     setEmail(null);
     router.refresh();
   }
