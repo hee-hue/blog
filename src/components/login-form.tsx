@@ -49,9 +49,15 @@ export function LoginForm() {
 
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
-      {params.get("error") === "auth" && status === "idle" && (
+      {status === "idle" && params.get("error") === "expired" && (
         <p role="alert" className="text-sm text-destructive">
-          로그인 링크가 만료되었거나 올바르지 않습니다. 다시 요청해 주세요.
+          로그인 링크가 만료되었거나 이미 사용되었습니다. 새 링크를 요청해 주세요.
+        </p>
+      )}
+      {status === "idle" && params.get("error") === "auth" && (
+        <p role="alert" className="text-sm text-destructive">
+          로그인하지 못했습니다. 링크를 요청한 것과 같은 브라우저에서 메일의 링크를 열었는지
+          확인하고, 새 링크를 요청해 주세요.
         </p>
       )}
       <div className="space-y-2">
