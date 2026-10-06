@@ -25,7 +25,10 @@ create policy "profiles_select_own"
   to authenticated
   using ((select auth.uid()) = id);
 
-revoke insert, update, delete on public.profiles from anon, authenticated;
+-- 'Automatically expose new tables' 를 끈 프로젝트에서는 권한을 직접 줘야 한다.
+-- 로그인한 사용자에게 읽기만 허용하고(행은 위 RLS 로 본인 것만), 쓰기는 모두 막는다.
+revoke all on public.profiles from anon, authenticated;
+grant select on public.profiles to authenticated;
 
 -- 3) 가입 시 프로필 자동 생성. 화이트리스트에 있는 이메일이면 admin.
 create or replace function public.handle_new_user()
