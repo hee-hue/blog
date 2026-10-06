@@ -1,12 +1,51 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { AdminTable, type StatRow } from "@/components/admin-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MOCK_STATS } from "@/lib/mock-posts";
 import { getPublishedPosts } from "@/lib/posts";
+import { createClient } from "@/lib/supabase/server";
+
+// 요청마다 세션을 확인해야 하므로 정적 생성하지 않는다.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "관리자", robots: { index: false, follow: false } };
 
-export default function AdminPage() {
+function Notice({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="py-10 text-center">
+      <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+      <p className="mt-3 text-muted-foreground">{children}</p>
+    </div>
+  );
+}
+
+// 관리자만 볼 수 있다. 설정이 없거나 권한을 확인하지 못하면 접근을 막는다(fail closed).
+export default async function AdminPage() {
+  const supabase = await createClient();
+  if (!supabase) {
+    return <Notice title="인증이 설정되지 않았습니다">Supabase 연결 후 사용할 수 있습니다.</Notice>;
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=/admin");
+
+  // RLS 로 본인의 profiles 행만 읽을 수 있다.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profile?.role !== "admin") {
+    return <Notice title="접근 권한이 없습니다">관리자 계정으로 로그인해 주세요.</Notice>;
+  }
+
+  return <AdminDashboard />;
+}
+
+function AdminDashboard() {
   const rows: StatRow[] = getPublishedPosts().map((p) => ({
     slug: p.slug,
     title: p.title,

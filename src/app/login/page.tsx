@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { LoginForm } from "@/components/login-form";
 import {
@@ -21,7 +22,9 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <LoginForm />
+          <Suspense>
+            <LoginForm />
+          </Suspense>
           <p className="text-xs text-muted-foreground">
             수집하는 개인정보는 이메일 주소뿐이며, 로그인과 북마크·좋아요 저장에만
             사용합니다.

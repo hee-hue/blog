@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { AuthButton } from "@/components/auth-button";
 import { SearchButton } from "@/components/search-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SITE } from "@/lib/site";
@@ -30,12 +30,7 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-1">
           <SearchButton />
           <ThemeToggle />
-          <Link
-            href="/login"
-            className={buttonVariants({ variant: "default", size: "sm" })}
-          >
-            로그인
-          </Link>
+          <AuthButton />
         </div>
       </div>
     </header>

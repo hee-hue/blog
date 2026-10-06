@@ -1,22 +1,59 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { safeNext } from "@/lib/auth-utils";
+import { createClient } from "@/lib/supabase/client";
 
-// 목업: 실제 이메일 발송은 Supabase 연동 단계에서 구현한다.
+type Status = "idle" | "sending" | "sent" | "error";
+
 export function LoginForm() {
-  const [submitted, setSubmitted] = useState(false);
+  const params = useSearchParams();
+  const next = safeNext(params.get("next"));
+  const [status, setStatus] = useState<Status>("idle");
+  const [message, setMessage] = useState("");
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const email = String(new FormData(e.currentTarget).get("email") ?? "").trim();
+    const supabase = createClient();
+
+    if (!supabase) {
+      setStatus("error");
+      setMessage("로그인 기능이 아직 설정되지 않았습니다.");
+      return;
+    }
+
+    setStatus("sending");
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
+    });
+
+    if (error) {
+      setStatus("error");
+      setMessage(
+        error.status === 429
+          ? "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요."
+          : "로그인 링크를 보내지 못했습니다. 이메일 주소를 확인하고 다시 시도해 주세요.",
+      );
+      return;
+    }
+    setStatus("sent");
+  }
 
   return (
-    <form
-      className="space-y-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        setSubmitted(true);
-      }}
-    >
+    <form className="space-y-4" onSubmit={onSubmit}>
+      {params.get("error") === "auth" && status === "idle" && (
+        <p role="alert" className="text-sm text-destructive">
+          로그인 링크가 만료되었거나 올바르지 않습니다. 다시 요청해 주세요.
+        </p>
+      )}
       <div className="space-y-2">
         <Label htmlFor="email">이메일</Label>
         <Input
@@ -26,15 +63,20 @@ export function LoginForm() {
           required
           autoComplete="email"
           placeholder="you@example.com"
-          onChange={() => setSubmitted(false)}
+          onChange={() => status !== "sending" && setStatus("idle")}
         />
       </div>
-      <Button type="submit" className="w-full" size="lg">
-        로그인 링크 받기
+      <Button type="submit" className="w-full" size="lg" disabled={status === "sending"}>
+        {status === "sending" ? "보내는 중…" : "로그인 링크 받기"}
       </Button>
-      {submitted && (
-        <p role="status" className="text-sm text-muted-foreground">
-          로그인 기능은 아직 준비 중입니다. (목업 화면)
+      {status === "sent" && (
+        <p role="status" className="text-sm text-link">
+          메일을 보냈습니다. 받은 편지함에서 링크를 눌러 로그인하세요.
+        </p>
+      )}
+      {status === "error" && (
+        <p role="alert" className="text-sm text-destructive">
+          {message}
         </p>
       )}
     </form>
