@@ -53,6 +53,12 @@ export function AuthButton() {
       <span className="hidden max-w-32 truncate text-sm text-muted-foreground sm:inline" title={email}>
         {email}
       </span>
+      <Link
+        href="/me"
+        className="rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      >
+        북마크
+      </Link>
       <Button variant="outline" size="sm" onClick={signOut}>
         로그아웃
       </Button>

@@ -9,7 +9,6 @@ import { PostActions } from "@/components/post-actions";
 import { TagLink } from "@/components/tag-badge";
 import { Toc } from "@/components/toc";
 import { Separator } from "@/components/ui/separator";
-import { MOCK_STATS } from "@/lib/mock-posts";
 import { formatDate } from "@/lib/post-utils";
 import {
   getAdjacentPosts,
@@ -73,7 +72,7 @@ export default async function PostPage({ params }: PageProps<"/posts/[slug]">) {
             ))}
           </div>
           <div className="mt-6">
-            <PostActions initialLikes={MOCK_STATS[post.slug]?.likes ?? 0} />
+            <PostActions slug={post.slug} />
           </div>
         </header>
 
